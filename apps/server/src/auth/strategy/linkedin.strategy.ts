@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { User } from '@prisma/client';
 import { Strategy, StrategyOptionWithRequest, Profile } from 'passport-linkedin-oauth2';
 import { UserService } from '@/server/user/user.service';
+import { processUsername } from "@reactive-resume/utils";
 
 @Injectable()
 export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
@@ -30,10 +31,7 @@ export class LinkedInStrategy extends PassportStrategy(Strategy, 'linkedin') {
 
     const email = profile.email;
     const picture = profile.picture;
-
-    console.log(profile.id.toLowerCase())
-
-    const id = profile.id.toLowerCase();
+    const id = processUsername(profile.id ?? email.split("@")[0]);
 
     let user: User | null = null;
 
