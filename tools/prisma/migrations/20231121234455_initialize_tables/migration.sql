@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Provider" AS ENUM ('email', 'github', 'google', 'linkedin');
+CREATE TYPE "Provider" AS ENUM ('email', 'github', 'google', 'linkedin', 'facebook');
 
 -- CreateEnum
 CREATE TYPE "Visibility" AS ENUM ('public', 'private');

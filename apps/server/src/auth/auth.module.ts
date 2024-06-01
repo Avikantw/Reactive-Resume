@@ -10,6 +10,7 @@ import { UserService } from "../user/user.service";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { DummyStrategy } from "./strategy/dummy.strategy";
+import { FacebookStrategy } from "./strategy/facebook.strategy";
 import { GitHubStrategy } from "./strategy/github.strategy";
 import { GoogleStrategy } from "./strategy/google.strategy";
 import { LinkedInStrategy } from "./strategy/linkedin.strategy";
@@ -75,6 +76,21 @@ export class AuthModule {
 
               return new LinkedInStrategy(clientID, clientSecret, callbackURL, userService);
             } catch {
+              return new DummyStrategy();
+            }
+          },
+        },
+        {
+          provide: FacebookStrategy,
+          inject: [ConfigService, UserService],
+          useFactory: (configService: ConfigService<Config>, userService: UserService) => {
+            try {
+              const clientID = configService.getOrThrow("FACEBOOK_CLIENT_ID");
+              const clientSecret = configService.getOrThrow("FACEBOOK_CLIENT_SECRET");
+              const callbackURL = configService.getOrThrow("FACEBOOK_CALLBACK_URL");
+              return new FacebookStrategy(clientID, clientSecret, callbackURL, userService);
+            } catch {
+              // Optionally fall back to a dummy strategy if configuration is incomplete
               return new DummyStrategy();
             }
           },

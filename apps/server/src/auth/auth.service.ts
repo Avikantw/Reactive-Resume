@@ -207,6 +207,14 @@ export class AuthService {
       providers.push("linkedin");
     }
 
+    if (
+      this.configService.get("FACEBOOK_CLIENT_ID") &&
+      this.configService.get("FACEBOOK_CLIENT_SECRET") &&
+      this.configService.get("FACEBOOK_CALLBACK_URL")
+    ) {
+      providers.push("facebook");
+    }
+
     return providers;
   }
 

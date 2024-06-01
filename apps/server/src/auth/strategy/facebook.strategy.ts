@@ -1,31 +1,39 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
-import { User } from "@prisma/client";
-import { Strategy } from "passport-facebook";
+/* eslint-disable simple-import-sort/imports */
+/* eslint-disable unicorn/prefer-optional-catch-binding */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prettier/prettier */
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { User } from '@prisma/client';
+import { Profile, Strategy } from 'passport-facebook';  // Importing Profile here
 
 import { UserService } from "@/server/user/user.service";
+import { processUsername } from '@reactive-resume/utils';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    readonly clientID: string,
+    readonly clientSecret: string,
+    readonly callbackURL: string,
+    private readonly userService: UserService) {
     super({
-      clientID: process.env.FACEBOOK_CLIENT_ID, // Facebook App ID
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET, // Facebook App Secret
-      callbackURL: process.env.FACEBOOK_CALLBACK_URL, // Callback URL after authentication
-      scope: "email", // Request permissions
-      profileFields: ["id", "emails", "name"], // Fields in user profile
+      clientID, clientSecret, callbackURL,
+      scope: "email",  // Request permissions
+      profileFields: ["id", "emails", "name"],  // Specify the fields you need
     });
   }
 
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: Profile,  // Use the Profile interface here
     done: (err: any, user?: any, info?: any) => void,
   ): Promise<any> {
-    const { name, emails } = profile;
-    const email = emails[0].value;
-    const displayName = `${name.givenName} ${name.familyName}`;
+    const { emails, name, id } = profile;
+    const email = emails && emails.length > 0 ? emails[0].value : null;
+    const displayName = name ? `${name.givenName} ${name.familyName}` : 'Unknown Name';
+    const username = processUsername(id || (email ? email.split("@")[0] : ''));
 
     let user: User | null = null;
 
@@ -41,12 +49,13 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
           email,
           name: displayName,
           provider: "facebook",
-          emailVerified: true, // Assuming email verified by Facebook
+          emailVerified: true,  // Assuming email verified by Facebook
+          username: username,
         });
       }
 
       done(null, user);
-    } catch {
+    } catch (error) {
       throw new BadRequestException("Failed to authenticate with Facebook");
     }
   }
