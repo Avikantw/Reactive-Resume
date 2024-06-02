@@ -12,6 +12,7 @@ enum Provider {
   github
   google
   linkedin
+  facebook
 }
 
 enum Visibility {

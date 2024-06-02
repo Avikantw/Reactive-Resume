@@ -40,6 +40,7 @@ import { TwoFactorGuard } from "./guards/two-factor.guard";
 import { getCookieOptions } from "./utils/cookie";
 import { payloadSchema } from "./utils/payload";
 import { LinkedInGuard } from "./guards/linkedin.guard";
+import { FacebookGuard } from "./guards/facebook.guard";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -47,7 +48,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private async exchangeToken(id: string, email: string, isTwoFactorAuth = false) {
     try {
@@ -77,7 +78,7 @@ export class AuthController {
     const redirectLoginUrl = this.configService.get("LOGIN_REDIRECT_URL");
     const redirectUrl = new URL(`${redirectLoginUrl}/auth/callback`);
 
-    console.log(redirectUrl)
+    console.log(redirectUrl);
 
     const { accessToken, refreshToken } = await this.exchangeToken(
       user.id,
@@ -165,6 +166,25 @@ export class AuthController {
     @User() user: UserWithSecrets,
     @Res({ passthrough: true }) response: Response,
   ) {
+    return this.handleAuthenticationResponse(user, response, false, true);
+  }
+
+  @ApiTags("OAuth", "Facebook")
+  @Get("facebook")
+  @UseGuards(FacebookGuard)
+  facebookLogin() {
+    // This initiates the OAuth flow; the actual redirection is handled by Passport and the FacebookGuard
+    return;
+  }
+
+  @ApiTags("OAuth", "Facebook")
+  @Get("facebook/callback")
+  @UseGuards(FacebookGuard)
+  async facebookCallback(
+    @User() user: UserWithSecrets,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // This method is called after successful authentication with Facebook
     return this.handleAuthenticationResponse(user, response, false, true);
   }
 
