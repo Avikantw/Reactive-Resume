@@ -78,8 +78,6 @@ export class AuthController {
     const redirectLoginUrl = this.configService.get("LOGIN_REDIRECT_URL");
     const redirectUrl = new URL(`${redirectLoginUrl}/auth/callback`);
 
-    console.log(redirectUrl);
-
     const { accessToken, refreshToken } = await this.exchangeToken(
       user.id,
       user.email,

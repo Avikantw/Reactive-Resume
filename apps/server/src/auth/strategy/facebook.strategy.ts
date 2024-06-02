@@ -42,21 +42,28 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
     }
 
     try {
-      user = await this.userService.findOneByIdentifier(email);
+      user = await this.userService.findOneByIdentifier(email) ?? await this.userService.findOneByIdentifier(id);
 
-      if (!user) {
-        user = await this.userService.create({
-          email,
-          name: displayName,
-          provider: "facebook",
-          emailVerified: true,  // Assuming email verified by Facebook
-          username: username,
-        });
-      }
+      if (!user) throw new Error('User not found.');
 
       done(null, user);
-    } catch (error) {
-      throw new BadRequestException("Failed to authenticate with Facebook");
+    } catch {
+      try {
+
+        user = await this.userService.create({
+          email,
+          locale: "en-US",
+          name: `${displayName}`,
+          provider: "facebook",
+          emailVerified: true, // auto-verify emails
+          username: `${username}`,
+          secrets: { create: {} },
+        });
+
+        done(null, user);
+      } catch {
+        throw new BadRequestException('User already exists');
+      }
     }
   }
 }
