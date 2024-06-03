@@ -9,6 +9,8 @@ import {
   ReactiveResumeParser,
   ReactiveResumeV3,
   ReactiveResumeV3Parser,
+  TXTResume, 
+  TXTResumeParser,
 } from "@reactive-resume/parser";
 import { ResumeData } from "@reactive-resume/schema";
 import {
@@ -49,6 +51,7 @@ enum ImportType {
   "reactive-resume-v3-json" = "reactive-resume-v3-json",
   "json-resume-json" = "json-resume-json",
   "linkedin-data-export-zip" = "linkedin-data-export-zip",
+  "txt-resume-txt" = "txt-resume-txt",
 }
 
 const formSchema = z.object({
@@ -66,7 +69,7 @@ type ValidationResult =
   | {
       isValid: true;
       type: ImportType;
-      result: ResumeData | ReactiveResumeV3 | LinkedIn | JsonResume;
+      result: ResumeData | ReactiveResumeV3 | LinkedIn | JsonResume | TXTResume;
     };
 
 export const ImportDialog = () => {
@@ -96,6 +99,7 @@ export const ImportDialog = () => {
   const accept = useMemo(() => {
     if (filetype.includes("json")) return ".json";
     if (filetype.includes("zip")) return ".zip";
+    if (filetype.includes("txt")) return ".txt";
     return "";
   }, [filetype]);
 
@@ -131,6 +135,14 @@ export const ImportDialog = () => {
         const parser = new LinkedInParser();
         const data = await parser.readFile(file);
         const result = await parser.validate(data);
+
+        setValidationResult({ isValid: true, type, result });
+      }
+
+      if (type === ImportType["txt-resume-txt"]) {
+        const parser = new TXTResumeParser();
+        const data = await parser.readFile(file);
+        const result = parser.validate(data);
 
         setValidationResult({ isValid: true, type, result });
       }
@@ -179,6 +191,13 @@ export const ImportDialog = () => {
       if (type === ImportType["linkedin-data-export-zip"]) {
         const parser = new LinkedInParser();
         const data = parser.convert(validationResult.result as LinkedIn);
+
+        await importResume({ data });
+      }
+
+      if (type === ImportType["txt-resume-txt"]) {
+        const parser = new TXTResumeParser();
+        const data = parser.convert(validationResult.result as TXTResume);
 
         await importResume({ data });
       }
@@ -241,6 +260,7 @@ export const ImportDialog = () => {
                         <SelectItem value="linkedin-data-export-zip">
                           LinkedIn Data Export (.zip)
                         </SelectItem>
+                        <SelectItem value="txt-resume-txt"> txt Resume (.txt) </SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
