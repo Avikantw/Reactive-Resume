@@ -10,7 +10,7 @@ export const SocialAuth = () => {
   if (!providers || providers.length === 0) return null;
 
   // for some reason the Github button did not show up when running local mode
-  // remember to delete ! when deployed
+  // remember to remove ! when deployed
   return (
     <div className="grid grid-cols-2 gap-4">
       {!providers.includes("github") && (
@@ -39,8 +39,7 @@ export const SocialAuth = () => {
         <Button
           asChild
           size="lg"
-          className="col-span-2 !bg-[#0a66c2] !text-white hover:!bg-[#0a66c2]/80"
-          // className="w-full !bg-[#0a66c2] !text-white hover:!bg-[#0a66c2]/80"
+          className="w-full !bg-[#0a66c2] !text-white hover:!bg-[#0a66c2]/80"
         >
           <a href="/api/auth/linkedin">
             <LinkedinLogo className="mr-3 size-4" />
